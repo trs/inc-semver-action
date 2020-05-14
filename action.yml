@@ -8,6 +8,10 @@ inputs:
     description: 'Directory where package.json is located'
     required: true
 outputs:
+  latest-version:
+    description: 'Latest version'
+  latest-tag:
+    description: 'Latest tag'
   next-version:
     description: 'Next version'
   next-tag:

@@ -26,14 +26,6 @@ const RELEASE_TYPES = [
   'major'
 ];
 
-async function fetchGitTags() {
-  await exec.exec('git', ['fetch', '--depth=1', 'origin', '+refs/tags/*:refs/tags/*']);
-}
-
-async function fetchGitHistory() {
-  await exec.exec('git', ['fetch', '--prune', '--unshallow']);
-}
-
 async function findLatestTag(octokit, tagPrefix) {
   async function listTags(tags = [], page = 0) {
     // TODO: change to graphql endpoint
@@ -49,8 +41,7 @@ async function findLatestTag(octokit, tagPrefix) {
 
     tags.push(
       ...tagsList
-        .map((tag) => tag.name)
-        .filter((tag) => tag.startsWith(tagPrefix))
+        .filter((tag) => tag.name.startsWith(tagPrefix))
     );
 
     return listTags(tags, page + 1);
@@ -61,38 +52,39 @@ async function findLatestTag(octokit, tagPrefix) {
 
   const getVersion = (tag) => tag.replace(tagPrefix, '');
 
-  const latestTag = tags.sort((a, b) => semver.compare(getVersion(a), getVersion(b)))[tags.length -1];
+  const latestTag = tags.sort((a, b) => semver.compare(getVersion(a.name), getVersion(b.name)))[tags.length -1];
   return latestTag;
 }
 
-async function getCommits(tag, directory) {
-  let output = '';
-  let error = '';
-
-  try {
-    await exec.exec('git', ['log', '--oneline', `${tag}..`, '--', directory], {
-      listeners: {
-        stdout: (data) => output += data.toString(),
-        stderr: (data) => error += data.toString()
+async function getCommits(octokit, latestTagSha, thisRef, directory) {
+  const data = await octokit.graphql(`query {
+    repository(name:"${github.context.repo.repo}", owner:"${github.context.repo.owner}") {
+      ref(qualifiedName:"${thisRef}") {
+        target {
+          ... on Commit {
+            history(path:"${directory}") {
+              edges {
+                node {
+                  id,
+                  oid,
+                  message
+                }
+              }
+            }
+          }
+        }
       }
-    });
-  } catch (err) {
-    error = err.message;
-  }
+    }
+  }`);
 
-  if (error) {
-    if (/does not have any commits yet/.test(error)) return [];
-    else throw new Error(error);
-  }
+  const allCommits = data.repository.ref.target.history.edges;
+  const commits = [];
 
-  const commits = output
-    .split('\n')
-    .map((commit) => commit.trim().match(GIT_LOG_COMMIT_REGEX))
-    .filter((match) => match !== null)
-    .map((match) => ({
-      hash: match[1],
-      message: match[2]
-    }));
+  for (const commit of allCommits) {
+    if (commit.node.oid === latestTagSha) break;
+
+    commits.push(commit.node);
+  }
 
   return commits;
 }
@@ -134,37 +126,41 @@ void async function () {
     const octokit = new github.GitHub(githubToken);
 
     const latestTag = await findLatestTag(octokit, tagPrefix);
+    const latestVersion = latestTag ? latestTag.name.replace(tagPrefix, '') : null;
 
     let nextVersion = packageVersion;
 
     if (latestTag) {
-      await fetchGitTags();
-      // await fetchGitHistory();
-      const commits = await getCommits(latestTag, directory);
+      const commits = await getCommits(octokit, latestTag.commit.sha, github.context.ref, directory);
+
+      console.log(commits);
 
       const releaseType = determineReleaseType(commits);
       if (releaseType !== null) {
-        const latestVersion = latestTag.replace(tagPrefix, '');
         nextVersion = semver.inc(latestVersion, releaseType);
 
-        console.log({
-          releaseType,
-          latestVersion,
-          nextVersion
-        })
+        console.log(`Commits trigger a ${releaseType} release`);
+      } else {
+        console.log('No commits trigger a release');
+        return;
       }
+    } else {
+      console.log('No previous tag found');
     }
 
     const nextTag = `${tagPrefix}${nextVersion}`;
 
-    core.setOutput('next-version', nextVersion);
-    core.setOutput('next-tag', nextTag);
-
     console.log({
+      latestVersion,
       latestTag,
       nextVersion,
       nextTag
     });
+
+    core.setOutput('latest-version', latestVersion);
+    core.setOutput('latest-tag', latestTag);
+    core.setOutput('next-version', nextVersion);
+    core.setOutput('next-tag', nextTag);
   } catch (err) {
     core.setFailed(err.message);
   }

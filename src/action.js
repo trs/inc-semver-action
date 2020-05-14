@@ -77,13 +77,17 @@ async function getCommits(octokit, latestTagSha, thisRef, directory) {
     }
   }`);
 
-  const allCommits = data.repository.ref.target.history.edges;
+  const allCommits = data.repository.ref.target.history.edges.map((commit) => commit.node);
   const commits = [];
 
   for (const commit of allCommits) {
-    if (commit.node.oid === latestTagSha) break;
+    console.log({
+      commit,
+      latestTagSha
+    });
+    if (commit.oid === latestTagSha) break;
 
-    commits.push(commit.node);
+    commits.push(commit);
   }
 
   return commits;

@@ -14,9 +14,7 @@ const accessAsync = promisify(fs.access);
 const semver = require('semver');
 const core = require('@actions/core');
 const github = require('@actions/github');
-const exec = require('@actions/exec');
 
-const GIT_LOG_COMMIT_REGEX = /^([a-z0-9]+) (?:\(.+\) |)(.+)/i;
 const COMMIT_TYPE_PREFIX = /^(\w+): /i;
 const COMMIT_MESSAGE_BREAKING_CHANGE = /^BREAKING CHANGE: /m;
 
@@ -57,6 +55,8 @@ async function findLatestTag(octokit, tagPrefix) {
 }
 
 async function getCommits(octokit, latestTagSha, thisRef, directory) {
+  console.log(`Searching commits between ${latestTagSha} -> ${thisRef}`);
+
   const data = await octokit.graphql(`query {
     repository(name:"${github.context.repo.repo}", owner:"${github.context.repo.owner}") {
       ref(qualifiedName:"${thisRef}") {
@@ -81,11 +81,9 @@ async function getCommits(octokit, latestTagSha, thisRef, directory) {
   const commits = [];
 
   for (const commit of allCommits) {
-    console.log({
-      commit,
-      latestTagSha
-    });
-    if (commit.oid === latestTagSha) break;
+    if (commit.oid === latestTagSha) {
+      break;
+    }
 
     commits.push(commit);
   }
@@ -105,7 +103,7 @@ function determineReleaseType(commits) {
       switch (prefix) {
         case 'feat': return type < 1 ? 1 : type;
         case 'fix': return type < 0 ? 0 : type;
-        default: type;
+        default: return type;
       }
     }, -1);
 
@@ -129,14 +127,16 @@ void async function () {
 
     const octokit = new github.GitHub(githubToken);
 
-    const latestTag = await findLatestTag(octokit, tagPrefix);
-    const latestVersion = latestTag ? latestTag.name.replace(tagPrefix, '') : null;
+    const latestTagProps = await findLatestTag(octokit, tagPrefix);
+    const latestVersion = latestTagProps ? latestTagProps.name.replace(tagPrefix, '') : null;
+    const latestTag = latestTagProps ? latestTagProps.name : null;
 
     let nextVersion = packageVersion;
 
-    if (latestTag) {
-      const commits = await getCommits(octokit, latestTag.commit.sha, github.context.ref, directory);
+    if (latestTagProps) {
+      const commits = await getCommits(octokit, latestTagProps.commit.sha, github.context.ref, directory);
 
+      console.log(`Found ${commits.length} commits`);
       console.log(commits);
 
       const releaseType = determineReleaseType(commits);
@@ -161,10 +161,10 @@ void async function () {
       nextTag
     });
 
-    core.setOutput('latest-version', latestVersion);
-    core.setOutput('latest-tag', latestTag);
-    core.setOutput('next-version', nextVersion);
-    core.setOutput('next-tag', nextTag);
+    core.setOutput('latestVersion', latestVersion);
+    core.setOutput('latestTag', latestTag);
+    core.setOutput('nextVersion', nextVersion);
+    core.setOutput('nextTag', nextTag);
   } catch (err) {
     core.setFailed(err.message);
   }

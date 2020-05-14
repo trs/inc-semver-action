@@ -8,13 +8,13 @@ inputs:
     description: 'Directory where package.json is located'
     required: true
 outputs:
-  latest-version:
+  latestVersion:
     description: 'Latest version'
-  latest-tag:
+  latestTag:
     description: 'Latest tag'
-  next-version:
+  nextVersion:
     description: 'Next version'
-  next-tag:
+  nextTag:
     description: 'Next tag'
 runs:
   using: 'node12'

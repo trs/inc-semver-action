@@ -41,15 +41,16 @@ module.exports.fetchLatestTag = async function fetchLatestTag(prefix) {
 /**
  * Get all commits on the path from ref since the given date.
  */
-module.exports.fetchCommits = async function fetchCommits(path, date) {
+module.exports.fetchCommits = async function fetchCommits(path, fromOid) {
   const { repository } = await octokit.graphql(`
-    query commits($repo: String!, $owner: String!, $oid: GitObjectID!, $path: String!, $date: GitTimestamp!) {
+    query commits($repo: String!, $owner: String!, $oid: GitObjectID!, $path: String!) {
       repository(name:$repo, owner:$owner) {
         object(oid:$oid) {
           ... on Commit {
-            history(path:$path, since:$date) {
+            history(path:$path) {
               edges {
                 node {
+                  oid
                   message
                 }
               }
@@ -61,9 +62,15 @@ module.exports.fetchCommits = async function fetchCommits(path, date) {
   `, {
     ...context.repo,
     oid: context.sha,
-    path,
-    date
+    path
   });
 
-  return repository.object.history.edges.map((edge) => edge.node);
+  const commits = [];
+  for (const {node} of repository.object.history.edges) {
+    if (node.oid === fromOid) break;
+
+    commits.push(node);
+  }
+
+  return commits;
 }

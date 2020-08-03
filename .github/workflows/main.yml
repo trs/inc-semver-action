@@ -15,18 +15,20 @@ jobs:
         with:
           node-version: '12'
       - name: Determine Version
-        uses: trs/inc-semver-action@2ba551092776c89e6e2f2907c0348d77af74360b
+        uses: trs/inc-semver-action@a80f5228488df9b4bc6df221a723d200980baa10
         id: semver
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           directory: .
           prefix: "v"
-      - run: |
+      - name: Version Info
+        run: |
           echo latestVersion: ${{ steps.semver.outputs.latestVersion }}
           echo latestTag: ${{ steps.semver.outputs.latestTag }}
           echo nextVersion: ${{ steps.semver.outputs.nextVersion }}
           echo nextTag: ${{ steps.semver.outputs.nextTag }}
       - name: Create Release
+        if: ${{ steps.semver.outputs.nextTag }} != null
         id: release
         uses: actions/create-release@v1
         env:

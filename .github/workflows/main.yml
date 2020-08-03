@@ -35,5 +35,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.semver.outputs.nextTag }}
-          release_name: Release v${{ steps.semver.outputs.nextVersion }}
-          body: ${{ steps.semver.outputs.latestVersion }} -> ${{ steps.semver.outputs.nextVersion }}
+          release_name: v${{ steps.semver.outputs.nextVersion }}
+          body: ${{ steps.semver.outputs.changelog }}

@@ -14,8 +14,7 @@ module.exports.fetchLatestTag = async function fetchLatestTag(prefix) {
             name
             target {
               ... on Commit {
-                oid,
-                committedDate
+                oid
               }
             }
           }
@@ -33,8 +32,7 @@ module.exports.fetchLatestTag = async function fetchLatestTag(prefix) {
   return {
     tag: latestNode.name,
     version: latestNode.name.substring(prefix.length),
-    oid: latestNode.target.oid,
-    date: latestNode.target.committedDate,
+    oid: latestNode.target.oid
   };
 }
 
@@ -52,6 +50,8 @@ module.exports.fetchCommits = async function fetchCommits(path, fromOid) {
                 node {
                   oid
                   message
+                  abbreviatedOid
+                  url
                 }
               }
             }

@@ -4,7 +4,7 @@ const semver = require('semver');
 
 const { getPackageInfo } = require('./pkg');
 const { fetchLatestTag, fetchCommits } = require('./gh');
-const { determineReleaseType } = require('./ver');
+const { determineReleaseType, formatChangeLog } = require('./ver');
 
 void async function () {
   try {
@@ -17,13 +17,14 @@ void async function () {
     const package = await getPackageInfo();
     console.log(`Using package: ${package.name}`)
 
-    const latestTag = await fetchLatestTag(package.prefix);
+    let latestTag = await fetchLatestTag(package.prefix);
     if (!latestTag) {
-      console.log(`No previous tag found, defaulting to package version (${package.version}).`);
+      console.log(`No previous tag found, defaulting to package version.`);
 
-      setOutput('nextVersion', package.version);
-      setOutput('nextTag', `${package.prefix}${package.version}`);
-      return;
+      latestTag = {
+        tag: `${package.prefix}${package.version}`,
+        version: package.version
+      };
     }
 
     console.log(`Found tag: ${latestTag.tag} (${latestTag.version})`);
@@ -36,21 +37,28 @@ void async function () {
     console.log(`Searching commits: ${latestTag.oid}..${context.sha}`);
     const commits = await fetchCommits(package.directory, latestTag.oid);
     console.log(`Found ${commits.length} commits`);
-    console.table(Object.fromEntries(commits.map((commit) => [commit.oid, {message: commit.message}])), ['message']);
+
+    // Build change log
+    const changelog = formatChangeLog(commits);
+    console.log(changelog);
 
     // Determine next release type based on commit messages
-    const releaseType = determineReleaseType(commits);
-    if (!releaseType) {
-      console.log('No commits trigger a release');
-      return;
+    let nextVersion = latestTag.version;
+    if (latestTag.oid) {
+      const releaseType = determineReleaseType(commits);
+      if (!releaseType) {
+        console.log('No commits trigger a release');
+        return;
+      }
+
+      console.log(`Commits trigger a ${releaseType} release`);
+
+      nextVersion = semver.inc(latestTag.version, releaseType);
     }
-
-    console.log(`Commits trigger a ${releaseType} release`);
-
-    const nextVersion = semver.inc(latestTag.version, releaseType);
 
     setOutput('nextVersion', nextVersion);
     setOutput('nextTag', `${package.prefix}${nextVersion}`);
+    setOutput('changelog', changelog);
   } catch (err) {
     setFailed(err.message);
   }

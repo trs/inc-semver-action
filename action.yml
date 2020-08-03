@@ -20,6 +20,8 @@ outputs:
     description: 'Next version'
   nextTag:
     description: 'Next tag'
+  changeLog:
+    description: 'List of commits'
 runs:
   using: 'node12'
   main: 'src/action.js'

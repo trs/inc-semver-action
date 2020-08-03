@@ -34,7 +34,7 @@ void async function () {
     setOutput('latestTag', latestTag.tag);
 
     // Find commits between latest tag and commit
-    console.log(`Searching commits between: ${latestTag.oid} -> ${context.ref}`);
+    console.log(`Searching commits between: ${latestTag.oid} -> ${context.sha}`);
     const commits = await fetchCommits(package.directory, latestTag.date);
     console.log(`Found ${commits.length} commits`);
     console.table(commits, ['message']);

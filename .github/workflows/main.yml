@@ -16,7 +16,7 @@ jobs:
           node-version: '12'
       - name: Determine Version
         uses: trs/inc-semver-action@master
-        id: version
+        id: semver
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
           directory: .

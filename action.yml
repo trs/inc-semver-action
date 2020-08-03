@@ -1,4 +1,4 @@
-name: 'Inc Semver'
+name: 'Increment SemVer Action'
 description: 'Determine the next semver based on commits to a given path and the last tag. Tags are prefixed with the package name. Useful for monorepos.'
 inputs:
   token:
@@ -6,7 +6,8 @@ inputs:
     required: true
   directory:
     description: 'Directory where package.json is located'
-    required: true
+    default: '.'
+    required: false
 outputs:
   latestVersion:
     description: 'Latest version'

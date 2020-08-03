@@ -3,7 +3,7 @@ const {context} = require('@actions/github');
 const semver = require('semver');
 
 const { getPackageInfo } = require('./pkg');
-const { fetchLatestTag } = require('./gh');
+const { fetchLatestTag, fetchCommits } = require('./gh');
 const { determineReleaseType } = require('./ver');
 
 void async function () {

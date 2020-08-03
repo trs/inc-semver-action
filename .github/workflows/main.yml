@@ -14,7 +14,14 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '12'
-      - uses: trs/inc-semver-action@master
+      - name: Determine Version
+        uses: trs/inc-semver-action@master
+        id: version
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
           directory: .
+      - run: |
+          echo latestVersion: ${{ steps.semver.outputs.latestVersion }}
+          echo latestTag: ${{ steps.semver.outputs.latestTag }}
+          echo nextVersion: ${{ steps.semver.outputs.nextVersion }}
+          echo nextTag: ${{ steps.semver.outputs.nextTag }}

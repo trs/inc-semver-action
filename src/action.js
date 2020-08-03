@@ -1,5 +1,6 @@
 const {setFailed, setOutput} = require('@actions/core');
 const {context} = require('@actions/github');
+const semver = require('semver');
 
 const { getPackageInfo } = require('./pkg');
 const { fetchLatestTag } = require('./gh');
@@ -21,10 +22,11 @@ void async function () {
     setOutput('nextTag', null);
 
     if (!latestTag) {
-      console.log(`No previous tag found, defaulting to package version (${package.version}).`);
+      const packageVersion = `v${package.version}`;
+      console.log(`No previous tag found, defaulting to package version (${packageVersion}).`);
 
-      setOutput('nextVersion', package.version);
-      setOutput('nextTag', `${package.prefix}${package.version}`);
+      setOutput('nextVersion', packageVersion);
+      setOutput('nextTag', `${package.prefix}${packageVersion}`);
       return;
     }
 
@@ -47,10 +49,10 @@ void async function () {
 
     console.log(`Commits trigger a ${releaseType} release`);
 
-    const nextVersion = semver.inc(latestVersion, releaseType);
+    const nextVersion = semver.inc(latestTag.version, releaseType);
 
-    setOutput('nextVersion', nextVersion);
-    setOutput('nextTag', `${package.prefix}${nextVersion}`);
+    setOutput('nextVersion', `v${nextVersion}`);
+    setOutput('nextTag', `${package.prefix}v${nextVersion}`);
   } catch (err) {
     setFailed(err.message);
   }

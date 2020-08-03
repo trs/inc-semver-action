@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: '12'
       - name: Determine Version
-        uses: trs/inc-semver-action@6c26fd32a5dd93d2481b91bd1b14a7ff584e98de
+        uses: trs/inc-semver-action@2ba551092776c89e6e2f2907c0348d77af74360b
         id: semver
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

@@ -8,19 +8,17 @@ const { determineReleaseType } = require('./ver');
 
 void async function () {
   try {
-    const package = await getPackageInfo();
-    console.log(`Using package ${package.name}`)
-
-    console.log('Fetching latest tag...');
-    const latestTag = await fetchLatestTag(package.prefix);
-    console.log(`Found tag: ${latestTag.tag} (${latestTag.version})`);
-
     // Default output
     setOutput('latestVersion', null);
     setOutput('latestTag', null);
     setOutput('nextVersion', null);
     setOutput('nextTag', null);
 
+    const package = await getPackageInfo();
+    console.log(`Using package ${package.name}`)
+
+    console.log('Fetching latest tag...');
+    const latestTag = await fetchLatestTag(package.prefix);
     if (!latestTag) {
       console.log(`No previous tag found, defaulting to package version (${package.version}).`);
 
@@ -28,6 +26,8 @@ void async function () {
       setOutput('nextTag', `${package.prefix}${package.version}`);
       return;
     }
+
+    console.log(`Found tag: ${latestTag.tag} (${latestTag.version})`);
 
     // Set latest values
     setOutput('latestVersion', latestTag.version);

@@ -12,8 +12,8 @@ void async function () {
     console.log(`Using package ${package.name}`)
 
     console.log('Fetching latest tag...');
-
     const latestTag = await fetchLatestTag(package.prefix);
+    console.log(`Found tag: ${latestTag.tag} (${latestTag.version})`);
 
     // Default output
     setOutput('latestVersion', null);

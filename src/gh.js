@@ -43,7 +43,7 @@ module.exports.fetchLatestTag = async function fetchLatestTag(prefix) {
  */
 module.exports.fetchCommits = async function fetchCommits(path, date) {
   const { repository } = await octokit.graphql(`
-    query commits($repo: String!, $owner: String!, $ref: GitObjectID!, $path: String!, $since: GitTimestamp!) {
+    query commits($repo: String!, $owner: String!, $ref: GitObjectID!, $path: String!, $date: GitTimestamp!) {
       repository(name:$repo, owner:$owner) {
         object(oid:$ref) {
           ... on Commit {

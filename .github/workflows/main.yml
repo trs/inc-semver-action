@@ -20,6 +20,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           directory: .
+          prefix: "v"
       - run: |
           echo latestVersion: ${{ steps.semver.outputs.latestVersion }}
           echo latestTag: ${{ steps.semver.outputs.latestTag }}
@@ -31,6 +32,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.semver.outputs.nextVersion }}
-          release_name: ${{ steps.semver.outputs.nextVersion }}
-          body: ${{ steps.semver.outputs.latestTag }} -> ${{ steps.semver.outputs.nextVersion }}
+          tag_name: ${{ steps.semver.outputs.nextTag }}
+          release_name: Release v${{ steps.semver.outputs.nextVersion }}
+          body: ${{ steps.semver.outputs.latestVersion }} -> ${{ steps.semver.outputs.nextVersion }}

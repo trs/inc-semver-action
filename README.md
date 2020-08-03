@@ -13,6 +13,9 @@ Tags are prefixed with the package name determined from it's `package.json`.
 
 If no previous tag is found, the current `version` inside `package.json` is output.
 
+*Note* this action does not perform any releases or change the package in anyway.
+It is meant to be used along side a release action of your choice.
+
 ## Usage
 
 ```yml
@@ -28,6 +31,7 @@ jobs:
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
           directory: "packages/my-pkg" # Directory containing package.json
+          prefix: "my-pkg@v"
       - run: |
           echo latestVersion: ${{ steps.semver.outputs.latestVersion }}
           echo latestTag: ${{ steps.semver.outputs.latestTag }}
@@ -41,3 +45,20 @@ jobs:
   - Must be `${{ secrets.GITHUB_TOKEN }}`
 - `directory` (Default: `.`)
   - Directory containing a `package.json` file
+- `prefix` (Default: `<package name>@v`)
+  - Prefix for the next tag
+
+## Outputs
+
+- `latestVersion`
+  - Latest version found before incrementing
+- `latestTag`
+  - Tag for the latest version found
+- `nextVersion`
+  - Next version after incrementing
+- `nextTag`
+  - Tag for the next version
+
+## Example
+
+See [this repository's workflow](.github/workflows/main.yml).

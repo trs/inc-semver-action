@@ -8,6 +8,9 @@ inputs:
     description: 'Directory where package.json is located'
     default: '.'
     required: false
+  prefix:
+    description: 'Prefix for next tag'
+    default: '<package name>@v'
 outputs:
   latestVersion:
     description: 'Latest version'

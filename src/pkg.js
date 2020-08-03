@@ -9,18 +9,18 @@ const readFileAsync = promisify(readFile);
 
 module.exports.getPackageInfo = async function getPackageInfo() {
   const directory = getInput('directory');
+  const prefix = getInput('prefix');
   const packageJsonPath = resolve(directory, 'package.json');
 
   await accessAsync(packageJsonPath, constants.R_OK);
 
   const {name, version} = await readFileAsync(packageJsonPath, {encoding: 'utf-8'})
     .then((content) => JSON.parse(content));
-  const prefix = `${name}@`;
 
   return {
     name,
     version,
-    prefix,
+    prefix: prefix || `${name}@`,
     directory
   };
 }

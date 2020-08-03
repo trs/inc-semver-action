@@ -27,6 +27,8 @@ module.exports.fetchLatestTag = async function fetchLatestTag(prefix) {
     prefix
   });
 
+  console.log(repository);
+
   const latestNode = repository.refs.nodes[0];
   if (!latestNode) return null;
 

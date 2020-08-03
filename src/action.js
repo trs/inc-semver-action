@@ -22,11 +22,10 @@ void async function () {
     setOutput('nextTag', null);
 
     if (!latestTag) {
-      const packageVersion = `v${package.version}`;
-      console.log(`No previous tag found, defaulting to package version (${packageVersion}).`);
+      console.log(`No previous tag found, defaulting to package version (${package.version}).`);
 
-      setOutput('nextVersion', packageVersion);
-      setOutput('nextTag', `${package.prefix}${packageVersion}`);
+      setOutput('nextVersion', package.version);
+      setOutput('nextTag', `${package.prefix}${package.version}`);
       return;
     }
 
@@ -51,8 +50,8 @@ void async function () {
 
     const nextVersion = semver.inc(latestTag.version, releaseType);
 
-    setOutput('nextVersion', `v${nextVersion}`);
-    setOutput('nextTag', `${package.prefix}v${nextVersion}`);
+    setOutput('nextVersion', nextVersion);
+    setOutput('nextTag', `${package.prefix}${nextVersion}`);
   } catch (err) {
     setFailed(err.message);
   }

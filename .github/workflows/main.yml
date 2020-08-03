@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: '12'
       - name: Determine Version
-        uses: trs/inc-semver-action@a80f5228488df9b4bc6df221a723d200980baa10
+        uses: trs/inc-semver-action@master
         id: semver
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -28,7 +28,7 @@ jobs:
           echo nextVersion: ${{ steps.semver.outputs.nextVersion }}
           echo nextTag: ${{ steps.semver.outputs.nextTag }}
       - name: Create Release
-        if: ${{ steps.semver.outputs.nextTag }} != null
+        if: ${{ steps.semver.outputs.nextTag }} != ''
         id: release
         uses: actions/create-release@v1
         env:

@@ -9,15 +9,14 @@ const { determineReleaseType } = require('./ver');
 void async function () {
   try {
     // Default output
-    setOutput('latestVersion', null);
-    setOutput('latestTag', null);
-    setOutput('nextVersion', null);
-    setOutput('nextTag', null);
+    setOutput('latestVersion', '');
+    setOutput('latestTag', '');
+    setOutput('nextVersion', '');
+    setOutput('nextTag', '');
 
     const package = await getPackageInfo();
-    console.log(`Using package ${package.name}`)
+    console.log(`Using package: ${package.name}`)
 
-    console.log('Fetching latest tag...');
     const latestTag = await fetchLatestTag(package.prefix);
     if (!latestTag) {
       console.log(`No previous tag found, defaulting to package version (${package.version}).`);
@@ -37,7 +36,7 @@ void async function () {
     console.log(`Searching commits: ${latestTag.oid}..${context.sha}`);
     const commits = await fetchCommits(package.directory, latestTag.oid);
     console.log(`Found ${commits.length} commits`);
-    console.table(commits, ['message']);
+    console.table(Object.fromEntries(commits.map((commit) => [commit.oid, {message: commit.message}])), ['message']);
 
     // Determine next release type based on commit messages
     const releaseType = determineReleaseType(commits);

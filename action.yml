@@ -1,5 +1,5 @@
 name: 'Increment SemVer Action'
-description: 'Determine the next semver based on commits to a given path and the last tag. Tags are prefixed with the package name. Useful for monorepos.'
+description: 'Determine the next semver based on commits to a given path and the last tag.'
 inputs:
   token:
     description: 'Github Token'
@@ -20,3 +20,6 @@ outputs:
 runs:
   using: 'node12'
   main: 'src/action.js'
+branding:
+  icon: 'box'
+  color: 'gray-dark'

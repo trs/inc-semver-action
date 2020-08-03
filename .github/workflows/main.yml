@@ -18,10 +18,19 @@ jobs:
         uses: trs/inc-semver-action@master
         id: semver
         with:
-          token: "${{ secrets.GITHUB_TOKEN }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
           directory: .
       - run: |
           echo latestVersion: ${{ steps.semver.outputs.latestVersion }}
           echo latestTag: ${{ steps.semver.outputs.latestTag }}
           echo nextVersion: ${{ steps.semver.outputs.nextVersion }}
           echo nextTag: ${{ steps.semver.outputs.nextTag }}
+      - name: Create Release
+        id: release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.semver.outputs.nextVersion }}
+          release_name: Release ${{ steps.semver.outputs.nextVersion }}
+          body: ${{ steps.semver.outputs.latestTag }} -> ${{ steps.semver.outputs.nextVersion }}
